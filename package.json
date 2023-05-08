@@ -1,0 +1,45 @@
+{
+  "name": "boardapps",
+  "version": "1.0.0",
+  "description": "Aplikasi Board for TV Monitoring",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ickylife01/boardapps.git"
+  },
+  "keywords": [
+    "rest",
+    "api",
+    "nodejs",
+    "postgresql"
+  ],
+  "author": "Ricky Abdullah Safei",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ickylife01/boardapps/issues"
+  },
+  "homepage": "https://github.com/ickylife01/boardapps#readme",
+  "dependencies": {
+    "axios": "^0.22.0",
+    "body-parser": "^1.20.1",
+    "cors": "^2.8.5",
+    "cron": "^2.3.0",
+    "express": "^4.18.2",
+    "file-type": "^18.3.0",
+    "https": "^1.0.0",
+    "ip": "^1.1.8",
+    "jsonwebtoken": "^9.0.0",
+    "md5": "^2.3.0",
+    "mime": "^3.0.0",
+    "moment": "^2.29.4",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.2",
+    "node-fetch": "^2.6.9",
+    "pg": "^8.10.0"
+  }
+}
