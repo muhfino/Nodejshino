@@ -15,7 +15,6 @@ const CronJob = require('cron').CronJob;
 const mime = require('mime');
 const util = require('util');
 const query = util.promisify(connection.query).bind(connection);
-// const FileType = require('file-type');
 
 const axios = require('axios');
 const { DefaultDeserializer } = require('v8');
@@ -880,7 +879,7 @@ exports.sparepartdailydetail =  async (req, res) => {
             }else{
               var isHoliday = false;
             }
-            console.log(dataArray);
+          
             dataArray.forEach(element => {
               if(element.date == DatePeriode ){
                 isHoliday = true;
@@ -898,7 +897,7 @@ exports.sparepartdailydetail =  async (req, res) => {
 
             if(DatePeriode != ""){
           
-              connection.query('INSERT INTO daily_detail (tanggalke, hari, companycode, companyname, dateperiode, amount, akumulasi, balance, isholiday) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT ON CONSTRAINT daily_detail_companycode_dateperiode_key DO UPDATE SET hari = $1, companycode = $2, companyname = $3, dateperiode = $4, amount = $5, akumulasi = $6, balance = $7',
+              connection.query('INSERT INTO daily_detail (tanggalke, hari, companycode, companyname, dateperiode, amount, akumulasi, balance, isholiday) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT ON CONSTRAINT daily_detail_companycode_dateperiode_key DO UPDATE SET tanggalke= $1, hari = $2, companycode = $3, companyname = $4, dateperiode = $5, amount = $6, akumulasi = $7, balance = $8',
                 [tanggal,Hari,CompanyCode,CompanyName ,DatePeriode,total3,Akumulasi,Balance,isHoliday],
                 (error) => {
                   if (error) {
@@ -912,6 +911,8 @@ exports.sparepartdailydetail =  async (req, res) => {
           });
 
           const maxNumber = Math.max(...MaxAkumulasi);
+
+          console.log(maxNumber);
 
           bulan = postData.PeriodMonth;
           tahun = postData.PeriodYear;
@@ -987,17 +988,19 @@ exports.holiday = async (req, res) => {
 };
 
 exports.dailydetail = async (req, res) => {
-
-  var Companycode =req.body.CompanyCode;
+  var Companycode = req.body.CompanyCode;
   var bulan = req.body.PeriodMonth;
   var tahun = req.body.PeriodYear;
 
   try {
-          const allconfig = await connection.query(`select * from daily_detail where companycode='${Companycode}' AND EXTRACT(MONTH FROM dateperiode) = '${bulan}' AND EXTRACT(YEAR FROM dateperiode) = '${tahun}' order by dateperiode ASC`);
-          res.json(allconfig.rows);
-      } catch (err) {
-          console.error(err.message);
-      }   
+    const allconfig = await connection.query(
+      `SELECT * FROM daily_detail WHERE companycode = $1 AND TO_CHAR(dateperiode::date, 'MM') = $2 AND EXTRACT(YEAR FROM dateperiode::date)::text = $3 ORDER BY dateperiode ASC`,
+      [Companycode, bulan, tahun]
+    );
+    res.json(allconfig.rows);
+  } catch (err) {
+    console.error(err.message);
+  }
 };
 
 exports.dailyakumulasi = async (req, res) => {
@@ -1028,6 +1031,7 @@ exports.video = async (req, res) => {
   // const { active } = req.body;
 
   const fileType = mime.getType(originalname);
+  const fileExtension = mime.getExtension(req.file.mimetype);
   // console.log(fileType.startsWith('video'))
   if (!fileType || !fileType.startsWith('video')) {
     res.status(400).json({ message: 'Invalid file type. Only videos are allowed.' });
@@ -1035,7 +1039,8 @@ exports.video = async (req, res) => {
   }
   // Generate unique filename with timestamp and original name
   const timestamp = Date.now();
-  const filename = `${timestamp}-${originalname}`;
+  const filename = `${timestamp}.${fileExtension}`;
+  console.log(filename);
 
   // Construct the file path
   const filePath = path.join('uploads', filename);
@@ -1052,6 +1057,26 @@ exports.video = async (req, res) => {
   });
 
 };
+
+// exports.getVideo = async (req, res) => {
+//   const { videoId } = req.params;
+
+//   try {
+//     const video = await connection.query('SELECT path FROM videos WHERE id = $1', [videoId]);
+//     if (video.rows.length === 0) {
+//       res.status(404).json({ message: 'Video not found' });
+//       return;
+//     }
+
+//     const videoPath = video.rows[0].path;
+//     const videoUrl = `http://api.andalanjasa.com/uploads/${videoPath}`;
+
+//     res.json({ url: videoUrl });
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };
 
 exports.get_video = async (req, res) => {
   const { companycode } = req.params;
@@ -1124,7 +1149,6 @@ exports.videodelete = async (req, res) => {
           res.status(500).json({ message: 'Internal server error' });
           return;
         }
-
         res.json({ message: 'Video deleted successfully' });
       });
     });
