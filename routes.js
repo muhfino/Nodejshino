@@ -47,21 +47,22 @@ module.exports = function (app) {
 
     app.route('/masterrepcode')
         .post(verifikasi(1),jsonku.masterrepcode);
+        
+    // app.route('/sparepartdailydetail')
+    // .post(verifikasi(1),jsonku.sparepartdailydetail);
 
-    app.route('/movingcode')
-        .post(verifikasi(1),jsonku.movingcode);
 
-    app.route('/transtype')
-        .post(verifikasi(1),jsonku.transtype);
+    // app.route('/movingcode')
+    //     .post(verifikasi(1),jsonku.movingcode);
 
-    app.route('/sparepartdailydetail')
-        .post(verifikasi(1),jsonku.sparepartdailydetail);
+    // app.route('/transtype')
+    //     .post(verifikasi(1),jsonku.transtype);
 
-    app.route('/salestargetmonthly')
-        .post(verifikasi(1),jsonku.salestargetmonthly);
+    // app.route('/salestargetmonthly')
+    //     .post(verifikasi(1),jsonku.salestargetmonthly);
 
-    app.route('/salestargetyearly')
-        .post(verifikasi(1),jsonku.salestargetyearly);
+    // app.route('/salestargetyearly')
+    //     .post(verifikasi(1),jsonku.salestargetyearly);
 
     //=======================================================
     //Route for Testing, with preliminary path hmsi/board/api 
@@ -96,20 +97,20 @@ module.exports = function (app) {
     app.route('/hmsi/board/api/masterrepcode')
         .post(verifikasi(1),jsonku.masterrepcode);
 
-    app.route('/hmsi/board/api/movingcode')
-        .post(verifikasi(1),jsonku.movingcode);
-
-    app.route('/hmsi/board/api/transtype')
-        .post(verifikasi(1),jsonku.transtype);
-
     app.route('/hmsi/board/api/sparepartdailydetail')
         .post(verifikasi(1),jsonku.sparepartdailydetail);
 
-    app.route('/hmsi/board/api/salestargetmonthly')
-        .post(verifikasi(1),jsonku.salestargetmonthly);
+        // app.route('/hmsi/board/api/movingcode')
+    //     .post(verifikasi(1),jsonku.movingcode);
 
-    app.route('/hmsi/board/api/salestargetyearly')
-        .post(verifikasi(1),jsonku.salestargetyearly);
+    // app.route('/hmsi/board/api/transtype')
+    //     .post(verifikasi(1),jsonku.transtype);
+
+    // app.route('/hmsi/board/api/salestargetmonthly')
+    //     .post(verifikasi(1),jsonku.salestargetmonthly);
+
+    // app.route('/hmsi/board/api/salestargetyearly')
+    //     .post(verifikasi(1),jsonku.salestargetyearly);
 
     app.route('/hmsi/board/api/holiday')
         .post(verifikasi(1),jsonku.holiday);
@@ -132,4 +133,7 @@ module.exports = function (app) {
     app.route('/hmsi/board/api/delete/video/:id')
         .get(verifikasi(1), jsonku.videodelete);
 
+    app.route('/hmsi/board/api/spektrumku')
+        .post(verifikasi(1),jsonku.spektrumku);
+        
 }
