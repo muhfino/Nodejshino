@@ -46,7 +46,7 @@ app.use(express.json());
 app.use('/uploads', express.static('C:/New folder/HinoBoardApps-main/HinoBoardApps-main/uploads/'));
 
 // const Crontask = require("./crondaily");
-// // const Crontask1 = require("./cronmonthly");
+// const Crontask1 = require("./cronmonthly");
 
 // Crontask.start();
 // Crontask1.start();

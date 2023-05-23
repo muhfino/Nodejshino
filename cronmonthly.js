@@ -225,4 +225,4 @@ const Crontask1 = cron.schedule('*/3 * * * *', async (req, res) => {
   timezone: 'Asia/Jakarta'
 });
 
-// module.exports = Crontask1;
+module.exports = Crontask1;

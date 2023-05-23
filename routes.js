@@ -97,8 +97,8 @@ module.exports = function (app) {
     app.route('/hmsi/board/api/masterrepcode')
         .post(verifikasi(1),jsonku.masterrepcode);
 
-    app.route('/hmsi/board/api/sparepartdailydetail')
-        .post(verifikasi(1),jsonku.sparepartdailydetail);
+    // app.route('/hmsi/board/api/sparepartdailydetail')
+    //     .post(verifikasi(1),jsonku.sparepartdailydetail);
 
         // app.route('/hmsi/board/api/movingcode')
     //     .post(verifikasi(1),jsonku.movingcode);
@@ -115,11 +115,11 @@ module.exports = function (app) {
     app.route('/hmsi/board/api/holiday')
         .post(verifikasi(1),jsonku.holiday);
 
-    app.route('/hmsi/board/api/dailydetail')
-        .post(verifikasi(1),jsonku.dailydetail);
+    // app.route('/hmsi/board/api/dailydetail')
+    //     .post(verifikasi(1),jsonku.dailydetail);
 
-    app.route('/hmsi/board/api/dailyakumulasi')
-        .post(verifikasi(1),jsonku.dailyakumulasi);
+    // app.route('/hmsi/board/api/dailyakumulasi')
+    //     .post(verifikasi(1),jsonku.dailyakumulasi);
 
     app.route('/hmsi/board/api/videos')
         .post(verifikasi(1),jsonku.video);
@@ -135,5 +135,8 @@ module.exports = function (app) {
 
     app.route('/hmsi/board/api/spektrumku')
         .post(verifikasi(1),jsonku.spektrumku);
-        
+
+    // app.route('/hmsi/board/api/spektrumkuloop')
+    // .post(verifikasi(1),jsonku.spektrumkuloop);
+    
 }

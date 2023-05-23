@@ -25,33 +25,31 @@ const { error } = require('console');
 
 
 // const cronTask = cron.schedule('0 12,0 * * *', () => {
-const Crontask = cron.schedule('*/3 * * * *', async (req, res) => {
+const Crontask = cron.schedule('*/1 * * * *', async (req, res) => {
 
-    const dataArray1 = [];
+  const dataArray1 = [];
 
-    try {
-    const result = await query('SELECT companycode FROM public.company ORDER BY id ASC');
+  try {
+  const result = await query('SELECT companycode FROM public.company ORDER BY id ASC');
+  
+  result.rows.forEach(row => {
+      const companyCode = row.companycode;
+      dataArray1.push(companyCode);
+  });
+  } catch (error) {
+  console.error('Error querying database:', error);
+  }
     
-    result.rows.forEach(row => {
-        const companyCode = row.companycode;
-        dataArray1.push(companyCode);
-    });
-    console.log("cek company sukses");
-    } catch (error) {
-    console.error('Error querying database:', error);
-    }
-    
-   
-const headers = { 
-    "Access-Control-Allow-Headers": "*", // this will allow all CORS requests
-    "Access-Control-Allow-Methods": 'OPTIONS,POST,GET', // this states the allowed methods
-    "Content-Type": "application/json",
-    "ID": "hmsi",
-    "Pwd": "hmsi:hmsipassword123",
-    "ProcFlag": "GetSparepartControlBoardDetail"
+  const headers = { 
+      "Access-Control-Allow-Headers": "*", // this will allow all CORS requests
+      "Access-Control-Allow-Methods": 'OPTIONS,POST,GET', // this states the allowed methods
+      "Content-Type": "application/json",
+      "ID": "hmsi",
+      "Pwd": "hmsi:hmsipassword123",
+      "ProcFlag": "GetSparepartControlBoardDetail"
   };
 
-  const datatukday = ["01","02","03","04","05","06","07","08","09","11","12"]
+  const datatukday = ["21"];
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
@@ -59,7 +57,7 @@ const headers = {
   const formattedDate = `${currentYear}-${currentMonth}-${currentDay}`;
 
   const companyCodes = dataArray1;
-  var last_data;
+ 
 
   // Lakukan tugas cron untuk setiap parameter
   companyCodes.forEach(async companyCode1 => {
@@ -75,44 +73,45 @@ const headers = {
     var last_amount;
     var ini_hari;
     var new_tanggal;
+    var last_data;
   
-    const dataArray = [];
+    const DetailAllholiday = [];
             
     try {
-      const result = await query('SELECT holidays_date, description FROM holidays WHERE companycode = $1 AND EXTRACT(MONTH FROM holidays_date) = $2 AND EXTRACT(YEAR FROM holidays_date) = $3', [CompanyCode, inputbulan, inputtahun]);
+        const result = await query('SELECT holidays_date, description FROM holidays WHERE companycode = $1 AND EXTRACT(MONTH FROM holidays_date) = $2 AND EXTRACT(YEAR FROM holidays_date) = $3', [CompanyCode, inputbulan, inputtahun]);
     
-      result.rows.forEach(row => {
+        result.rows.forEach(row => {
         const inputDate = row.holidays_date;
         const formattedDate = moment(inputDate).add('day').format('YYYY-MM-DD');
         const description = row.description;
         const data = { date: formattedDate, description: description };
-        dataArray.push(data);
-        // console.log("cek holiday sukses");
-      });
+        DetailAllholiday.push(data);
+       
+        });
+
     } catch (error) {
-      console.error('Error querying database:', error);
-      
+        console.error('Error querying database:', error);
     }
   
-    try {
+    // try {
   
-      const query = `
-        SELECT * 
-        FROM daily_detail 
-        WHERE companycode = $1 
-          AND TO_CHAR(dateperiode::date, 'MM') = $2 
-          AND EXTRACT(YEAR FROM dateperiode::date)::text = $3 
-        ORDER BY dateperiode ASC
-      `;
-      const values = [CompanyCode, inputbulan, inputtahun];
+    //   const query = `
+    //     SELECT * 
+    //     FROM daily_detail 
+    //     WHERE companycode = $1 
+    //       AND TO_CHAR(dateperiode::date, 'MM') = $2 
+    //       AND EXTRACT(YEAR FROM dateperiode::date)::text = $3 
+    //     ORDER BY dateperiode ASC
+    //   `;
+    //   const values = [CompanyCode, inputbulan, inputtahun];
   
-      const result = await connection.query(query, values);
+    //   const result = await connection.query(query, values);
   
-      last_data = result.rows;
-      // console.log("cek dailydetail sukses");
-      } catch (err) {
-      console.error(err.message);
-      }
+    //   last_data = result.rows;
+     
+    //   } catch (err) {
+    //   console.error(err.message);
+    //   }
   
       try {
     
@@ -127,58 +126,49 @@ const headers = {
         const values = [CompanyCode, inputbulan, inputtahun];
     
         const result = await connection.query(query, values);
-    
-       
+
         result.rows.forEach(row => {
           last_amount = row.amount;
           var AA = last_amount;
           var BB = JSON.parse(AA);
           dataamount.push(BB)
         });
-        // console.log("cek holiday sukses");
   
         } catch (err) {
         console.error(err.message);
-        // res.status(500).json({ error: err.message });
         }
   
         try {
-      
-          const query = `
-            SELECT hari 
-            FROM daily_detail 
-            WHERE companycode = $1 
-              AND TO_CHAR(dateperiode::date, 'MM') = $2 
-              AND EXTRACT(YEAR FROM dateperiode::date)::text = $3 
-            ORDER BY dateperiode ASC
-          `;
+          const query = `SELECT hari FROM daily_detail WHERE companycode = $1 AND TO_CHAR(dateperiode::date, 'MM') = $2 AND EXTRACT(YEAR FROM dateperiode::date)::text = $3 ORDER BY dateperiode ASC`;
           const values = [CompanyCode, inputbulan, inputtahun];
-      
+          
           const result = await connection.query(query, values);
-      
+  
           result.rows.forEach(row => {
             ini_hari = row.hari;
-            var AA = ini_hari;
-            var BB = JSON.parse(AA);
-            datahari.push(BB)
+            var parsedHari = parseInt(ini_hari);
+            if (!isNaN(parsedHari)) {
+              datahari.push(parsedHari);
+            }else{
+              datahari.push(0);
+            }
+      
           });
-    
-          } catch (err) {
+        } catch (err) {
           console.error(err.message);
-          // res.status(500).json({ error: err.message });
-          }
+        }
   
-      var average = 0;
+     
       try {
+          var average = 0;
           const result = await query(`SELECT averagetarget FROM monthly_target WHERE companycode = '${CompanyCode}' AND tahun = '${inputtahun}' AND bulan = '${inputbulan}' ORDER BY bulan ASC`);
          
           result.rows.forEach(row => {
               const inputDate = row.averagetarget;
               average = inputDate;
           });
-                           
         } catch (err) {
-          average = 0;
+          console.log(err);
         }
 
       var day = inputtanggal;
@@ -187,6 +177,7 @@ const headers = {
       new_tanggal = (year + '-' + month + '-' + day);
       
       try {
+
         const databody = {
           "CompanyCode": companyCode1,
           "DatePeriod": new_tanggal,
@@ -241,23 +232,25 @@ const headers = {
             total1 = parseFloat(total/100000);
             total2 = Math.floor(total1);
             total3 = parseInt(total2);
-            // console.log(total3);
-
+          
           });
         }
         
         dataamount.push(total3);
 
         const numbers1 = datahari;
+        // console.log(numbers1);
         const maxNumber = Math.max(...numbers1);
-      
+        // console.log(maxNumber);
         if(total3 != 0){
           Hari = parseInt(maxNumber) + parseInt(1);
+          // Hari = 1;
         }else{
           Hari = 0;
         }
   
         let numbers = dataamount;
+        console.log(dataamount);
         var Akumulasi = numbers.reduce((a, b) => a + b);
   
         Balance = Akumulasi-(average * Hari);
@@ -277,7 +270,7 @@ const headers = {
             var isHoliday = false;
           }
         
-          dataArray.forEach(element => {
+          DetailAllholiday.forEach(element => {
   
               if(element.date == DatePeriode ){
                 isHoliday = true;
@@ -290,34 +283,38 @@ const headers = {
           Akumulasi = 0;
           Balance = 0;
         }
-
-          if(DatePeriode != ""){
+        console.log(Akumulasi);
+        if(DatePeriode != ""){
         
-            connection.query('INSERT INTO daily_detail (tanggalke, hari, companycode, companyname, dateperiode, amount, akumulasi, balance, isholiday) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT ON CONSTRAINT daily_detail_companycode_dateperiode_key DO UPDATE SET tanggalke= $1,companycode = $3, companyname = $4, dateperiode = $5, amount = $6, akumulasi = $7, balance = $8',
-              [inputtanggal,Hari,CompanyCode,CompanyName ,DatePeriode,total3,Akumulasi,Balance,isHoliday],
-              (error) => {
-                if (error) {
-                  console.log(error)
-                }
-                console.log(`Data has been inserted or updated.${CompanyCode}`);
+          connection.query('INSERT INTO daily_detail (tanggalke, hari, companycode, companyname, dateperiode, amount, akumulasi, balance, isholiday) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT ON CONSTRAINT daily_detail_companycode_dateperiode_key DO UPDATE SET amount = $6, akumulasi = $7, balance = $8',
+            [inputtanggal,Hari,CompanyCode,CompanyName ,DatePeriode,total3,Akumulasi,Balance,isHoliday],
+            (error) => {
+              if (error) {
+                console.log(error)
               }
-            );
-          }
-  
-          connection.query('INSERT INTO daily_akumulasi (companycode, bulan, tahun, akumulasi) VALUES ($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT daily_akumulasi_unique_companycode_bulan_tahun DO UPDATE SET companycode = $1 , bulan = $2, tahun = $3, akumulasi = $4',
-          [CompanyCode,inputbulan,inputtahun,maxNumber],
-          (error) => {
-            if (error) {
-              console.log(error)
+              console.log(`Data has been inserted or updated.${CompanyCode}`);
             }
-            console.log(`data has been inserted or updated daily akumulasi ${CompanyCode}`);
-          }
           );
+        }
+      
+        connection.query('INSERT INTO daily_akumulasi (companycode, bulan, tahun, akumulasi) VALUES ($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT daily_akumulasi_unique_companycode_bulan_tahun DO UPDATE SET companycode = $1 , bulan = $2, tahun = $3, akumulasi = $4',
+        [CompanyCode,inputbulan,inputtahun,maxNumber],
+        (error) => {
+          if (error) {
+            console.log(error)
+          }
+          console.log(`data has been inserted or updated daily akumulasi ${CompanyCode}`);
+        }
+        );
+
+       
       } catch (error) {
-        console.log(`TIDAK DAPAT RESPON ${CompanyCode}`); // Tangani kesalahan jika terjadi
+        console.log(error); // Tangani kesalahan jika terjadi
       }
     });
   });
+
+
 }, {
   scheduled: true,
   timezone: 'Asia/Jakarta'
