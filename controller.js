@@ -405,236 +405,6 @@ exports.masterrepcode = async function (req, res) {
   }
 };
 
-// exports.sparepartdailydetail =  async (req, res) => {
-
-//   var resJ=[];
-//   const agent = new https.Agent({  
-//   rejectUnauthorized: false
-//   });
-
-//   const headers = { 
-//     "Access-Control-Allow-Headers": "*", // this will allow all CORS requests
-//     "Access-Control-Allow-Methods": 'OPTIONS,POST,GET', // this states the allowed methods
-//     "Content-Type": "application/json",
-//     "ID": "hmsi",
-//     "Pwd": "hmsi:hmsipassword123",
-//     "ProcFlag": "GetSparepartControlBoardDetail"
-//   };
-  
-//   var postData = JSON.parse(JSON.stringify(req.body));
-//   var CompanyCode = postData.CompanyCode;
-//   var inputbulan = postData.PeriodMonth;
-//   var inputtahun = postData.PeriodYear;
-//   var new_tanggal;
-
-//   const dataArray = [];
-
-//     try {
-//       const result = await query('SELECT holidays_date, description FROM holidays WHERE companycode = $1 AND EXTRACT(MONTH FROM holidays_date) = $2 AND EXTRACT(YEAR FROM holidays_date) = $3', [CompanyCode, inputbulan, inputtahun]);
-    
-//       result.rows.forEach(row => {
-//         const inputDate = row.holidays_date;
-//         const formattedDate = moment(inputDate).add('day').format('YYYY-MM-DD');
-//         const description = row.description;
-//         const data = { date: formattedDate, description: description };
-//         dataArray.push(data);
-//       });
-//     } catch (error) {
-//       console.error('Error querying database:', error);
-//     }
-  
-//   var bulan = postData.PeriodMonth;
-//   var tahun = postData.PeriodYear;
-
-//     if(bulan == "10"){
-//       var addbil = 1;
-//       var bulanplus = (parseInt(addbil) + parseInt(bulan));
-//     }else{
-//       const bulanwithoutzero = bulan.replace('0', '')
-//       var addbil = 1;
-//       var bulanplus = (parseInt(addbil) + parseInt(bulanwithoutzero));
-//     }
-
-//     if(bulanplus >= 13 ){
-//       bulanplus = '0' + 1;
-//       var tahunplus = (parseInt(addbil) + parseInt(tahun));  
-//     }
-
-//     else if(bulanplus <= 9){
-//       bulanplus = '0' + bulanplus;
-//     }else{
-//       bulanplus = bulanplus;
-//     }
-
-//     if(tahunplus){
-//       var start_date = `'${tahun}-${bulan}-01'`
-//       var end_date = `'${tahunplus}-${bulanplus}-01'`
-//       var type = "days"
-//     }else{
-//       var start_date = `'${tahun}-${bulan}-01'`
-//       var end_date = `'${tahun}-${bulanplus}-01'`
-//       var type = "days"
-//     }
-    
-//     moment.suppressDeprecationWarnings = true;
-//     let fromDate = moment(start_date);
-//     let toDate = moment(end_date);
-//     let diff = toDate.diff(fromDate, type);
-
-//     const rangedate = [];
-//     for (let i = 0 ; i < diff; i++) {
-
-//     var new_date = moment(start_date, "YYYY-MM-DD").add('days', i);
-//     rangedate.push(new_date);
-
-//     }
-//       const requests = rangedate.map((i) => {  
-
-//         var day = i.format('DD');
-//         var month = i.format('MM');
-//         var year = i.format('YYYY');
-//         new_tanggal = (year + '-' + month + '-' + day);
-
-//         const databody =
-//         {
-//             "CompanyCode":postData.CompanyCode,
-//             "DatePeriod":new_tanggal,
-//             "UserInfo":[
-//               {
-//               "LoginID":"DCBAPI001",
-//               "Password":"password.123"
-//               }
-//             ]
-//         };
-
-//         return axios.post('https://hdcs.hinodms.co.id/restapi/frontend/web/index.php/sparepartcontrolboarddetail/list', databody, { headers , httpsAgent: agent  })
-//         });
-      
-//       axios.all(requests).then((responses) => {
-
-//         const databaru = [];
-//         const MaxAkumulasi = [];
-//         const AverageTarget = postData.AverageTarget;
-//         var dataamount = [];
-//         var x = 1;
-//         var y = 1;
-        
-//         responses.forEach((resp) => {
-//           var new_tanggal = resp.config.data; // Access DatePeriod
-//           var jsonString = new_tanggal;
-//           var jsonObject = JSON.parse(jsonString);
-         
-//           var detail =  resp.data.GetSparepartControlBoardDetailResult;
-//           var Hari = 0;
-//           var total = 0;
-//           var total1 = 0;
-//           var total2 = 0;
-//           var total3 = 0;
-//           var Balance = 0;
-//           var CompanyCode = postData.CompanyCode;
-//           var CompanyName = "";
-//           var DatePeriode = jsonObject.DatePeriod;
-
-//           detail.forEach((drow) => {
-            
-//             CompanyCode = drow.CompanyCode;
-//             CompanyName = drow.CompanyName;
-//             DatePeriode = drow.DatePeriode;
-//             total += parseFloat(drow.TotalAmount);
-//             total1 = parseFloat(total/100000);
-//             total2 = Math.floor(total1);
-//             total3 = parseInt(total2);
-           
-//           });
-
-//           dataamount.push(total3);
-
-//           if(total3 != 0){
-//             Hari = x++;
-//           }else{
-//             Hari = 0;
-//           }
-//           var tanggal = y++
-
-//           let numbers = dataamount;
-//           var Akumulasi = numbers.reduce((a, b) => a + b);
-
-//           MaxAkumulasi.push(Akumulasi);
-//           const maxNumber = Math.max(Akumulasi);
-         
-//           Balance = Akumulasi-(AverageTarget * Hari);
-
-//           var myDays = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    
-//           if(DatePeriode != ""){
-//             const inputDate = DatePeriode;
-//             var new_date = moment(inputDate).add('day').format('YYYY-MM-DD');
-//             var date = new Date(new_date);
-//             var thisDay = date.getDay();
-//             thisDay = myDays[thisDay];
-
-//             if(thisDay == "Minggu"){
-//               var isHoliday = true;
-//             }else{
-//               var isHoliday = false;
-//             }
-          
-//             dataArray.forEach(element => {
-//               if(element.date == DatePeriode ){
-//                 isHoliday = true;
-//               }
-//             });
-//           } 
-          
-//             if(total3 == 0){
-//               Akumulasi = 0;
-//               Balance = 0;
-//               databaru.push({"Tanggalke" : tanggal,"Hari" : Hari,"CompanyCode":CompanyCode,"CompanyName":CompanyName,"DatePeriode":DatePeriode,"Amount":total3,"Akumulasi":Akumulasi,"Balance":Balance ,"isHoliday" : isHoliday});
-//             }else{
-//               databaru.push({"Tanggalke" : tanggal,"Hari" : Hari,"CompanyCode":CompanyCode,"CompanyName":CompanyName,"DatePeriode":DatePeriode,"Amount":total3,"Akumulasi":Akumulasi,"Balance":Balance ,"isHoliday" : isHoliday});
-//             }
-
-//             if(DatePeriode != ""){
-          
-//               connection.query('INSERT INTO daily_detail (tanggalke, hari, companycode, companyname, dateperiode, amount, akumulasi, balance, isholiday) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT ON CONSTRAINT daily_detail_companycode_dateperiode_key DO UPDATE SET tanggalke= $1, hari = $2, companycode = $3, companyname = $4, dateperiode = $5, amount = $6, akumulasi = $7, balance = $8',
-//                 [tanggal,Hari,CompanyCode,CompanyName ,DatePeriode,total3,Akumulasi,Balance,isHoliday],
-//                 (error) => {
-//                   if (error) {
-//                     console.log(error)
-//                   }
-//                   console.log('Data has been inserted or updated.');
-//                 }
-//               );
-//             }
-           
-//           });
-
-//           const maxNumber = Math.max(...MaxAkumulasi);
-
-//           console.log(maxNumber);
-
-//           bulan = postData.PeriodMonth;
-//           tahun = postData.PeriodYear;
-
-//           connection.query('INSERT INTO daily_akumulasi (companycode, bulan, tahun, akumulasi) VALUES ($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT daily_akumulasi_unique_companycode_bulan_tahun DO UPDATE SET companycode = $1 , bulan = $2, tahun = $3, akumulasi = $4',
-//           [CompanyCode,bulan,tahun,maxNumber],
-//           (error) => {
-//             if (error) {
-//               console.log(error)
-//             }
-//             console.log('Data has been inserted or updated.');
-          
-//           }
-//           );
-
-//           const sum = [{"TotalAkumulasi" : maxNumber ,"Daily" : databaru}]
-
-//           res.json(sum);
-    
-//       })
-//       .catch((error =>{ res.send((error)); }));
-// }
-
 
 exports.holiday = async (req, res) => {
   try {
@@ -669,43 +439,6 @@ exports.holiday = async (req, res) => {
   }
 };
 
-
-// exports.dailydetail = async (req, res) => {
-//   try {
-//     const { CompanyCode, PeriodMonth, PeriodYear } = req.body;
-
-//     const query = `
-//       SELECT * 
-//       FROM daily_detail 
-//       WHERE companycode = $1 
-//         AND TO_CHAR(dateperiode::date, 'MM') = $2 
-//         AND EXTRACT(YEAR FROM dateperiode::date)::text = $3 
-//       ORDER BY dateperiode ASC
-//     `;
-//     const values = [CompanyCode, PeriodMonth, PeriodYear];
-
-//     const result = await connection.query(query, values);
-//     return res.json(result.rows);
-//   } catch (err) {
-//     console.error(err.message);
-//     return res.status(500).json({ error: err.message });
-//   }
-// };
-
-// exports.dailyakumulasi = async (req, res) => {
-//   try {
-//     const { CompanyCode, PeriodMonth, PeriodYear } = req.body;
-
-//     const query = `SELECT * FROM daily_akumulasi WHERE companycode = $1 AND tahun = $2 AND bulan = $3 ORDER BY bulan ASC`;
-//     const values = [CompanyCode, PeriodYear, PeriodMonth];
-
-//     const result = await connection.query(query, values);
-//     return res.json(result.rows);
-//   } catch (err) {
-//     console.error(err.message);
-//     return res.status(500).json({ error: err.message });
-//   }
-// };
 
 exports.video = async (req, res) => {
 
@@ -823,8 +556,10 @@ exports.spektrumku =  async (req, res) => {
   var TargetMonthly;
   var TargetYearly;
   var sumMonthly = [];
+  const dataArray1 = [];
   var sumYearly= [];
   var rataTarget = [];
+  var AmountTargetMon = 0;
   var AverageTarget1;
   let diff;
 
@@ -895,7 +630,8 @@ exports.spektrumku =  async (req, res) => {
     MovingCode = drow.MovingCode;
     JumlahItem = parseInt(drow.TotalItem);
     Inipersentasi = (JumlahItem / allTotalItem) * 100;
-    persentase = Inipersentasi.toFixed(2);
+    persentase = Math.round(Inipersentasi);
+    
 
     allmv.push({"CompanyCode": CompanyCode,
     "CompanyName": CompanyName,
@@ -967,20 +703,24 @@ try {
     
       if(AmountTarget){
         AmountTarget = parseFloat(AmountTarget/100000);
-        AmountTarget = Math.floor(AmountTarget);
+        AmountTarget = Math.round(AmountTarget);
         AmountTarget = parseInt(AmountTarget);
       }
 
       if(TotalAmountSales){
         TotalAmountSales = parseFloat(TotalAmountSales/100000);
-        TotalAmountSales = Math.floor(TotalAmountSales);
+        TotalAmountSales = Math.round(TotalAmountSales);
         TotalAmountSales = parseInt(TotalAmountSales);
       }
     
   });
   // console.log(AmountTarget);
   var Inipersentasi = (TotalAmountSales / AmountTarget) * 100;
-  var persentase = Inipersentasi.toFixed(2);
+  persentase = Math.round(Inipersentasi);
+
+  if(AmountTarget == 0){
+    persentase = 0;
+  }
 
   
   sumMonthly.push({"CompanyCode": CompanyCode,
@@ -1059,56 +799,56 @@ try {
 
    if(TotalAmountTargetSemester1){
     TargetSemester1 = parseFloat(TotalAmountTargetSemester1/100000);
-    TargetSemester1 = Math.floor(TargetSemester1);
+    TargetSemester1 = Math.round(TargetSemester1);
     TargetSemester1 = parseInt(TargetSemester1);
   }
 
   if(TotalAmountTargetSemester2){
     TargetSemester2 = parseFloat(TotalAmountTargetSemester2/100000);
-    TargetSemester2 = Math.floor(TargetSemester2);
+    TargetSemester2 = Math.round(TargetSemester2);
     TargetSemester2 = parseInt(TargetSemester2);
   }
 
   if(TotalAmountSalesSemester1){
     var SalesSemester1 = parseFloat(TotalAmountSalesSemester1/100000);
-    var SalesSemester1 = Math.floor(SalesSemester1);
+    var SalesSemester1 = Math.round(SalesSemester1);
     var SalesSemester1 = parseInt(SalesSemester1);
   }
 
   if(TotalAmountSalesSemester2){
     var SalesSemester2 = parseFloat(TotalAmountSalesSemester2/100000);
-    var SalesSemester2 = Math.floor(SalesSemester2);
+    var SalesSemester2 = Math.round(SalesSemester2);
     var SalesSemester2 = parseInt(SalesSemester2);
   }
 
   if(TotalAmountTargetYearly){
     var TargetYear = parseFloat(TotalAmountTargetYearly/100000);
-    var TargetYear = Math.floor(TargetYear);
+    var TargetYear = Math.round(TargetYear);
     var TargetYear = parseInt(TargetYear);
   }
 
   if(TotalAmountSalesYearly){
     var SalesYear = parseFloat(TotalAmountSalesYearly/100000);
-    var SalesYear = Math.floor(SalesYear);
+    var SalesYear = Math.round(SalesYear);
     var SalesYear = parseInt(SalesYear);
   }
 
   var persentaseSemester1 = (SalesSemester1 / TargetSemester1) * 100;
-  persentaseSemester1 = persentaseSemester1.toFixed(2);
-  if(persentaseSemester1 == "NaN"){
+  persentaseSemester1 = Math.round(persentaseSemester1);
+  if(TargetSemester1 == 0){
     persentaseSemester1 = "0";
   }
 
   var persentaseSemester2 = (SalesSemester2 / TargetSemester2) * 100;
-  persentaseSemester2 = persentaseSemester2.toFixed(2)
-  if(persentaseSemester2 == "NaN"){
-    persentaseSemester2 = "0";
+  persentaseSemester2 = Math.round(persentaseSemester2);
+  if(TargetSemester2 == 0){
+    persentaseSemester2 = 0;
   }
 
   var persentaseYear = (SalesYear / TargetYear) * 100;
-  persentaseYear = persentaseYear.toFixed(2);
-  if(persentaseYear == "NaN"){
-    persentaseYear = "0";
+  persentaseYear = Math.round(persentaseYear);
+  if(TargetYear == 0){
+    persentaseYear = 0;
   }
    sumYearly.push({
     "CompanyCode": CompanyCode,
@@ -1170,7 +910,7 @@ try {
 
   detailTypeTran.forEach((drow) => {
     JumlahTypetrans = parseFloat(drow.TotalAmount/1000000);
-    JumlahTypetrans = Math.floor(JumlahTypetrans);
+    JumlahTypetrans = Math.round(JumlahTypetrans);
     JumlahTypetrans = parseInt(JumlahTypetrans);
     allTotalAmount.push(parseInt(JumlahTypetrans));
   });
@@ -1181,10 +921,10 @@ try {
   detailTypeTran.forEach((drow) => {
   
     JumlahTypetrans = parseFloat(drow.TotalAmount/1000000);
-    JumlahTypetrans = Math.floor(JumlahTypetrans);
+    JumlahTypetrans = Math.round(JumlahTypetrans);
     JumlahTypetrans = parseInt(JumlahTypetrans);
     Inipersentasi = (JumlahTypetrans / allTotalType) * 100;
-    persentase = Inipersentasi.toFixed(2);
+    persentase = Math.round(Inipersentasi);
 
     alltypetrans.push({"CompanyCode": drow.CompanyCode,
     "CompanyName": drow.CompanyName,
@@ -1315,7 +1055,6 @@ try {
       allworkingdays = parseInt(total_workingdays) - count;
     }
   
-    var AmountTarget = 0;
     var CompanyCode = 0;
     var CompanyName = 0;
     var PeriodYear = 0;
@@ -1326,15 +1065,15 @@ try {
       CompanyName = drow.CompanyName;
       PeriodYear = drow.PeriodYear;
       PeriodMonth = drow.PeriodMonth;
-      AmountTarget = drow.AmountTarget;
+      AmountTargetMon = drow.AmountTarget;
     });
     // console.log(AmountTarget);
-    if (AmountTarget) {
-      AmountTarget = parseFloat(AmountTarget) / 100000; // Ubah ke float sebelum membagi
-      AmountTarget = Math.floor(AmountTarget);
-      AmountTarget = parseInt(AmountTarget);
-      var AverageTarget1 = parseFloat(AmountTarget) / allworkingdays; // Ubah ke float sebelum membagi
-      AverageTarget1 = Math.floor(AverageTarget1);
+    if (AmountTargetMon) {
+      AmountTargetMon = parseFloat(AmountTargetMon) / 100000; // Ubah ke float sebelum membagi
+      AmountTargetMon = Math.round(AmountTargetMon);
+      AmountTargetMon = parseInt(AmountTargetMon);
+      var AverageTarget1 = parseFloat(AmountTargetMon) / allworkingdays; // Ubah ke float sebelum membagi
+      AverageTarget1 = Math.round(AverageTarget1);
     }
   
     console.log("Jumlah Hari dalam 1 bulan =", diff); // Variabel diff belum didefinisikan
@@ -1347,7 +1086,7 @@ try {
             "CompanyName": CompanyName,
             "PeriodYear": PeriodYear,
             "PeriodMonth": PeriodMonth,
-            "AmountTarget": AmountTarget,
+            "AmountTarget": AmountTargetMon,
             "Workingdays": allworkingdays,
             "Average": AverageTarget1
           });
@@ -1362,178 +1101,181 @@ try {
   }
 
 
-//======================================== HIT DAILY DETAIL ====================
+// //======================================== HIT DAILY DETAIL ====================
 
-      const headers = { 
-      "Access-Control-Allow-Headers": "*", // this will allow all CORS requests
-      "Access-Control-Allow-Methods": 'OPTIONS,POST,GET', // this states the allowed methods
-      "Content-Type": "application/json",
-      "ID": "hmsi",
-      "Pwd": "hmsi:hmsipassword123",
-      "ProcFlag": "GetSparepartControlBoardDetail"
-      };
+//       const headers = { 
+//       "Access-Control-Allow-Headers": "*", // this will allow all CORS requests
+//       "Access-Control-Allow-Methods": 'OPTIONS,POST,GET', // this states the allowed methods
+//       "Content-Type": "application/json",
+//       "ID": "hmsi",
+//       "Pwd": "hmsi:hmsipassword123",
+//       "ProcFlag": "GetSparepartControlBoardDetail"
+//       };
 
-      var new_tanggal;
-
-      const dataArray1 = [];
-
-      try {
-        const result = await query('SELECT holidays_date, description FROM holidays WHERE companycode = $1 AND EXTRACT(MONTH FROM holidays_date) = $2 AND EXTRACT(YEAR FROM holidays_date) = $3', [CompanyCode, inputbulan, inputtahun]);
+//       var new_tanggal;
+//       // console.log(CompanyCode);
+//       try {
+//         const result = await query('SELECT holidays_date, description FROM holidays WHERE companycode = $1 AND EXTRACT(MONTH FROM holidays_date) = $2 AND EXTRACT(YEAR FROM holidays_date) = $3', [postData.CompanyCode, inputbulan, inputtahun]);
       
-        result.rows.forEach(row => {
-          const inputDate = row.holidays_date;
-          const formattedDate = moment(inputDate).add('day').format('YYYY-MM-DD');
-          const description = row.description;
-          const data = { date: formattedDate, description: description };
-          dataArray1.push(data);
-        });
-      } catch (error) {
-        console.error('Error querying database:', error);
-      }
+//         result.rows.forEach(row => {
+//           const inputDate = row.holidays_date;
+//           const formattedDate = moment(inputDate).add('day').format('YYYY-MM-DD');
+//           const description = row.description;
+//           const data = { date: formattedDate, description: description };
+//           dataArray1.push(data);
+//           // console.log(dataArray1);
+//         });
+//       } catch (error) {
+//         console.error('Error querying database:', error);
+//       }
   
-      const rangedate1 = [];
-      for (let i = 0 ; i < diff; i++) {
+//       const rangedate1 = [];
+//       for (let i = 0 ; i < diff; i++) {
 
-      var new_date = moment(start_date, "YYYY-MM-DD").add('days', i);
-      rangedate1.push(new_date);
+//       var new_date = moment(start_date, "YYYY-MM-DD").add('days', i);
+//       rangedate1.push(new_date);
 
-      }
+//       }
 
-      const requests = rangedate1.map((i) => {  
+//       const requests = rangedate1.map((i) => {  
 
-        var day = i.format('DD');
-        var month = i.format('MM');
-        var year = i.format('YYYY');
-        new_tanggal = (year + '-' + month + '-' + day);
+//         var day = i.format('DD');
+//         var month = i.format('MM');
+//         var year = i.format('YYYY');
+//         new_tanggal = (year + '-' + month + '-' + day);
 
-        const databody =
-        {
-            "CompanyCode":postData.CompanyCode,
-            "DatePeriod":new_tanggal,
-            "UserInfo":[
-              {
-              "LoginID":"DCBAPI001",
-              "Password":"password.123"
-              }
-            ]
-        };
+//         const databody =
+//         {
+//             "CompanyCode":postData.CompanyCode,
+//             "DatePeriod":new_tanggal,
+//             "UserInfo":[
+//               {
+//               "LoginID":"DCBAPI001",
+//               "Password":"password.123"
+//               }
+//             ]
+//         };
 
-        return axios.post('https://hdcs.hinodms.co.id/restapi/frontend/web/index.php/sparepartcontrolboarddetail/list', databody, { headers , httpsAgent: agent  })
-        });
+//         return axios.post('https://hdcs.hinodms.co.id/restapi/frontend/web/index.php/sparepartcontrolboarddetail/list', databody, { headers , httpsAgent: agent  })
+//         });
       
-        axios.all(requests).then((responses) => {
+//         axios.all(requests).then((responses) => {
 
-        const databaru = [];
-        const MaxAkumulasi = [];
-        var dataamount = [];
-        var x = 1;
-        var y = 1;
+//         const databaru = [];
+//         const MaxAkumulasi = [];
+//         var dataamount = [];
+//         var x = 1;
+//         var y = 1;
         
-        responses.forEach((resp) => {
-          var new_tanggal = resp.config.data; // Access DatePeriod
-          var jsonString = new_tanggal;
-          var jsonObject = JSON.parse(jsonString);
+//         responses.forEach((resp) => {
+//           var new_tanggal = resp.config.data; // Access DatePeriod
+//           var jsonString = new_tanggal;
+//           var jsonObject = JSON.parse(jsonString);
          
-          var detail =  resp.data.GetSparepartControlBoardDetailResult;
-          var Hari = 0;
-          var total = 0;
-          var total1 = 0;
-          var total2 = 0;
-          var total3 = 0;
-          var Balance = 0;
-          var CompanyCode = postData.CompanyCode;
-          var CompanyName = "";
-          var DatePeriode = jsonObject.DatePeriod;
+//           var detail =  resp.data.GetSparepartControlBoardDetailResult;
+//           var Hari = 0;
+//           var total = 0;
+//           var total1 = 0;
+//           var total2 = 0;
+//           var total3 = 0;
+//           var Balance = 0;
+//           var CompanyCode = postData.CompanyCode;
+//           var CompanyName = "";
+//           var DatePeriode = jsonObject.DatePeriod;
 
-          detail.forEach((drow) => {
+//           detail.forEach((drow) => {
             
-            CompanyCode = drow.CompanyCode;
-            CompanyName = drow.CompanyName;
-            DatePeriode = drow.DatePeriode;
-            total += parseFloat(drow.TotalAmount);
-            total1 = parseFloat(total/100000);
-            total2 = Math.floor(total1);
-            total3 = parseInt(total2);
+//             CompanyCode = drow.CompanyCode;
+//             CompanyName = drow.CompanyName;
+//             DatePeriode = drow.DatePeriode;
+//             total += parseFloat(drow.TotalAmount);
+//             total1 = parseFloat(total/100000);
+//             total2 = Math.round(total1);
+//             total3 = parseInt(total2);
            
-          });
+//           });
 
-          dataamount.push(total3);
+//           dataamount.push(total3);
 
-          if(total3 != 0){
-            Hari = x++;
-          }else{
-            Hari = 0;
-          }
-          var tanggal = y++
-
-          let numbers = dataamount;
-          var Akumulasi = numbers.reduce((a, b) => a + b);
-
-          MaxAkumulasi.push(Akumulasi);
-          const maxNumber = Math.max(Akumulasi);
-         
-          Balance = Akumulasi-(AverageTarget1 * Hari);
-
-          var myDays = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+//           var myDays = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     
-          if(DatePeriode != ""){
-            const inputDate = DatePeriode;
-            var new_date = moment(inputDate).add('day').format('YYYY-MM-DD');
-            var date = new Date(new_date);
-            var thisDay = date.getDay();
-            thisDay = myDays[thisDay];
+//           if(DatePeriode != ""){
+//             const inputDate = DatePeriode;
+//             var new_date = moment(inputDate).add('day').format('YYYY-MM-DD');
+//             var date = new Date(new_date);
+//             var thisDay = date.getDay();
+//             thisDay = myDays[thisDay];
 
-            if(thisDay == "Minggu"){
-              var isHoliday = true;
-            }else{
-              var isHoliday = false;
-            }
-          
-            dataArray1.forEach(element => {
-              if(element.date == DatePeriode ){
-                isHoliday = true;
-              }
-            });
-          } 
-          
-            if(total3 == 0){
-              Akumulasi = 0;
-              Balance = 0;
-              databaru.push({"Tanggalke" : tanggal,"Hari" : Hari,"CompanyCode":CompanyCode,"CompanyName":CompanyName,"DatePeriode":DatePeriode,"Amount":total3,"Akumulasi":Akumulasi,"Balance":Balance ,"isHoliday" : isHoliday});
-            }else{
-              databaru.push({"Tanggalke" : tanggal,"Hari" : Hari,"CompanyCode":CompanyCode,"CompanyName":CompanyName,"DatePeriode":DatePeriode,"Amount":total3,"Akumulasi":Akumulasi,"Balance":Balance ,"isHoliday" : isHoliday});
-            }
+//             if(thisDay == "Minggu"){
+//               var isHoliday = true;
+//             }else{
+//               var isHoliday = false;
+//             }
+            
+//             dataArray1.forEach(element => {
+//               if(element.date == DatePeriode ){
+//                 isHoliday = true;
+//               }
+//             });
+//           } 
 
-            // if(DatePeriode != ""){
+//           if(total3 != 0){
+//               //amount ada tapi holidays
+//               if(isHoliday == true){
+//                 Hari = 0;
+//               }else{
+//                 Hari = x++;
+//               }
+//           }else{
+
+//             if(isHoliday == true){
+//             Hari = 0;
+//             }
+
+//             if(isHoliday == false){
+//               Hari = x++;
+//             }
+
+//           }
+//           var tanggal = y++
+//           // console.log(dataamount);
+//           let numbers = dataamount;
+//           var Akumulasi = numbers.reduce((a, b) => a + b);
+
+//           MaxAkumulasi.push(Akumulasi);
+//           const maxNumber = Math.max(Akumulasi);
+         
+//           Balance = Akumulasi-(AverageTarget1 * Hari);
+
+//           var myDays = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
           
-            //   connection.query('INSERT INTO daily_detail (tanggalke, hari, companycode, companyname, dateperiode, amount, akumulasi, balance, isholiday) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT ON CONSTRAINT daily_detail_companycode_dateperiode_key DO UPDATE SET tanggalke= $1, hari = $2, companycode = $3, companyname = $4, dateperiode = $5, amount = $6, akumulasi = $7, balance = $8',
-            //     [tanggal,Hari,CompanyCode,CompanyName ,DatePeriode,total3,Akumulasi,Balance,isHoliday],
-            //     (error) => {
-            //       if (error) {
-            //         console.error('Error querying database:', error);
-            //       }
-            //       console.log('Data has been inserted or updated.');
-            //     }
-            //   );
-            // }
+//             if(total3 == 0){
+//               Akumulasi = 0;
+//               Balance = 0;
+//               databaru.push({"Tanggalke" : tanggal,"Hari" : Hari,"CompanyCode":CompanyCode,"CompanyName":CompanyName,"DatePeriode":DatePeriode,"Amount":total3,"Akumulasi":Akumulasi,"Balance":Balance ,"isHoliday" : isHoliday});
+//             }else{
+//               databaru.push({"Tanggalke" : tanggal,"Hari" : Hari,"CompanyCode":CompanyCode,"CompanyName":CompanyName,"DatePeriode":DatePeriode,"Amount":total3,"Akumulasi":Akumulasi,"Balance":Balance ,"isHoliday" : isHoliday});
+//             }
            
-          });
+//           });
+//           // console.log(MaxAkumulasi);
+//           const maxNumber = Math.max(...MaxAkumulasi);
+//           console.log(maxNumber);
+//           var PersenAchivMon = parseInt(maxNumber);
 
-          const maxNumber = Math.max(...MaxAkumulasi);
+//           PersenAchivMon = (PersenAchivMon / AmountTargetMon) * 100;
+//           PersenAchivMon = Math.round(PersenAchivMon);
 
-          // connection.query('INSERT INTO daily_akumulasi (companycode, bulan, tahun, akumulasi) VALUES ($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT daily_akumulasi_unique_companycode_bulan_tahun DO UPDATE SET companycode = $1 , bulan = $2, tahun = $3, akumulasi = $4',
-          // [CompanyCode,bulan,tahun,maxNumber],
-          // (error) => {
-          //   if (error) {
-          //     console.error('Error querying database:', error);
-          //   }
-          //   // console.log('Data has been inserted or updated.');
-          // }
-          // );
+//           if(AmountTargetMon == 0 ){
+//             PersenAchivMon = 0;
+//           }
 
-          const sum = [{"TotalAkumulasi" : maxNumber ,"Daily" : databaru,"TargetMonthly" : newdata , "TargetYearly" : TargetYearly,"MovingCode" : movingCode ,"TypeTran" : TypeTran ,"MonAchi" : sumMonthly ,"YearAchi": sumYearly} ]
-          return res.json(sum);
+//           const sum = [{"PersenAchivMon" : PersenAchivMon ,"Daily" : databaru,"TargetMonthly" : newdata , "TargetYearly" : TargetYearly,"MovingCode" : movingCode ,"TypeTran" : TypeTran ,"MonAchi" : sumMonthly ,"YearAchi": sumYearly} ]
+//           return res.json(sum);
           
-      })
-      .catch((error =>{ return res.send((error)); }));
+//       })
+//       .catch((error =>{ return res.send((error)); }));
+
+        const sum = [{"TargetMonthly" : newdata , "TargetYearly" : TargetYearly,"MovingCode" : movingCode ,"TypeTran" : TypeTran ,"MonAchi" : sumMonthly ,"YearAchi": sumYearly} ]
+          return res.json(sum);
 };
