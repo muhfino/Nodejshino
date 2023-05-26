@@ -98,5 +98,8 @@ module.exports = function (app) {
 
     app.route('/hmsi/board/api/spektrumku')
         .post(verifikasi(1),jsonku.spektrumku);
-    
+
+    // app.route('/hmsi/board/api/spektrumkuCRONJOB')
+    // .post(verifikasi(1),jsonku.spektrumkuCRONJOB);
+
 }
