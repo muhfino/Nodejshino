@@ -25,7 +25,7 @@ const { error } = require('console');
 
 
 // const cronTask = cron.schedule('0 12,0 * * *', () => {
-const Crontask = cron.schedule('*/2 * * * * ', async (req, res) => {
+const Crontask = cron.schedule('0 1,12,16 * * *', async (req, res) => {
 
   const dataArray1 = [];
 
@@ -165,7 +165,7 @@ const Crontask = cron.schedule('*/2 * * * * ', async (req, res) => {
       };
       
       try {
-        const response = await axios.post('https://hdcs.hinodms.co.id/restapi/frontend/web/index.php/sparepartcontrolboardsalestarget/list', data, {
+        const response = await axios.post('https://api.hinodms.co.id/Request.ashx', data, {
           headers,
           httpsAgent: agent
         });

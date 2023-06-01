@@ -99,6 +99,12 @@ module.exports = function (app) {
     app.route('/hmsi/board/api/spektrumku')
         .post(verifikasi(1),jsonku.spektrumku);
 
+    app.route('/hmsi/board/api/dailydetail')
+        .post(verifikasi(1),jsonku.dailydetail);
+
+    app.route('/hmsi/board/api/scheduller_sparepart')
+        .get(verifikasi(1),jsonku.scheduller_sparepart);
+
     // app.route('/hmsi/board/api/spektrumkuCRONJOB')
     // .post(verifikasi(1),jsonku.spektrumkuCRONJOB);
 

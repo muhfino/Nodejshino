@@ -46,9 +46,8 @@ app.use(express.json());
 app.use('/uploads', express.static('C:/New folder/HinoBoardApps-main/HinoBoardApps-main/uploads/'));
 
 // const Crontask = require("./crondaily");
-// const Crontask1 = require("./cronmonthly");
-// Crontask.start();
-// Crontask1.start();
+const Crontask = require("./scheduller.js");
+Crontask.start();
 // //panggil routes
 var routes = require('./routes');
 routes(app);
