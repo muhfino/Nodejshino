@@ -104,7 +104,12 @@ module.exports = function (app) {
 
     app.route('/hmsi/board/api/scheduller_sparepart')
         .get(verifikasi(1),jsonku.scheduller_sparepart);
-
+    //API Dengan company code
+    app.route('/hmsi/board/api/allholiday/:companycode')
+        .get(verifikasi(1),jsonku.holidaycompanycode);
+    //Show semua Holidays
+    app.route('/hmsi/board/api/allholiday')
+        .get(verifikasi(1),jsonku.allholidaycompanycode);
     // app.route('/hmsi/board/api/spektrumkuCRONJOB')
     // .post(verifikasi(1),jsonku.spektrumkuCRONJOB);
 

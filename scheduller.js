@@ -1,17 +1,12 @@
-'use strict';
-
-const connection = require('./db');
-const https = require('https');
-const util = require('util');
-const query = util.promisify(connection.query).bind(connection);
 const axios = require('axios');
-const { DefaultDeserializer } = require('v8');
 const cron = require('node-cron');
-const { error } = require('console');
+var connection = require('./db');
+const https = require('https');
+
 // Definisikan tugas cron
 
 // const Crontask = cron.schedule('0 1,12,16 * * *', async (req, res) => {
-const Crontask = cron.schedule('0 1,12,16 * * *', async (req, res) => {
+const Crontask = cron.schedule('*/2 * * * *', async (req, res) => {
 
     const allCompany = [];
 
