@@ -116,10 +116,11 @@ exports.crudConfig = async (req, res) => {
   }
 };
 
-//Untuk Get login Profile from DMS
 exports.getUserLogin = async (req, res) => {
-
+   
         try {
+    
+
             var EmployeeNo = req.body.EmployeeNo;
             var Password = req.body.Password;
         
@@ -137,9 +138,9 @@ exports.getUserLogin = async (req, res) => {
                 'Content-Type': 'application/json',
                 'ProcFlag': 'GetValidUserDataForApps'
             };
-            // console.log(HeaderLoginDMS);
-            // http://apitest.hinodms.co.id/Request.ashx
+            console.log(HeaderLoginDMS);
             // https://api.hinodms.co.id/Request.ashx
+            // http://apitest.hinodms.co.id/Request.ashx
             const resp = await fetch('https://api.hinodms.co.id/Request.ashx', {
                 method: 'POST',
                 body: JSON.stringify(bodyLoginDMS),
@@ -147,17 +148,27 @@ exports.getUserLogin = async (req, res) => {
             });
     
             const jsonLogin = await resp.json();
-
+            // console.log(jsonLogin);
+            // console.log(bodyLoginDMS);
+            //response.failed("Login Error", res);
+            
             if(jsonLogin.GetValidUserDataForAppsResult[0].ResultStatus[0].Message =="Login Success"){
                 var token = jwt.sign({ id : EmployeeNo }, config.secret, {
                     //ubah expires dalam ms
                     expiresIn: '2629800000'
                });
+               //console.log(respCredential.rows[0].id);
                var id_user = 10;
                //1 tambahan row username
                var username = EmployeeNo;
+               //2 tambahan row role
+               //role = rows[0].role;
 
+               //3 variable expires
+               // var expired = 30000
                var expired = 2629800000
+               //var isVerified = respCredential.rows[0].isVerified
+               console.log(token);
 
                var data = {
                     id_user: id_user,
@@ -165,16 +176,36 @@ exports.getUserLogin = async (req, res) => {
                     ip_address: ip.address()
                }
 
+               /*var query = "INSERT INTO ?? SET ?";
+               var table = ["akses_token"];
+
+               query = mysql.format(query, table);*/
                await connection.query("INSERT INTO access_token(id_credential, access_token, ip_address) VALUES ($1, $2, $3) returning *", [data.id_user, data.access_token, data.ip_address], function (error, rows) {
                     if (error) {
                         console.log(error);
                         //response.failed(err)
                     } else {
                         console.log("Token JWT tergenerate!");
+                        //GET USER PROFILE
+                        
+                         /*res.json({
+                              success: true,
+                              message: 'Token JWT tergenerate!',
+                              token: token,
+                              //4 tambahkan expired time
+                              expires: expired,
+                              currUser: data.id_user,
+                              user: username,
+                              //3 tambahkan role
+                              //role: role,
+                              isVerified: isVerified
+                         });*/
                     }
                });
 
                let bodyUserHMSI = {
+                //"ChangeDateTimeFrom" : "2020-06-10 00:00:00.000",
+                //"ChangeDateTimeTo" :  "2020-06-15 00:00:00.000",
                 "EmployeeNo": EmployeeNo
             };
             
@@ -193,10 +224,13 @@ exports.getUserLogin = async (req, res) => {
             });
     
             const jsonUser = await resp.json();
+            
+            console.log(jsonUser.GetUserProfileResult[0].CompanyCode == "3155098");
 
             if (jsonUser.GetUserProfileResult[0].CompanyCode == "3155098") {
                 try {
                     const allCompany = await connection.query('SELECT CompanyCode, CompanyName FROM company where active = true order by companyname');
+                    //res.json(allCompany.rows);
                     return response.okLogin(allCompany.rows,data.access_token, res);
                 } catch (err) {
                     return
@@ -207,6 +241,10 @@ exports.getUserLogin = async (req, res) => {
             
                 NewjsonUser["CompanyCode"] =jsonUser.GetUserProfileResult[0].CompanyCode;
                 NewjsonUser["CompanyName"] =jsonUser.GetUserProfileResult[0].CompanyName;
+    
+            // NewjsonUser.map(({CompanyCode, CompanyName}) => ({CompanyCode, CompanyName}));
+    
+                //console.log(NewjsonUser);
                 
                 return response.okLogin(NewjsonUser,data.access_token, res);
             }
@@ -218,6 +256,7 @@ exports.getUserLogin = async (req, res) => {
                 NewFailedUser["CompanyName"] =null;
                 return response.failed(NewFailedUser, res);
             }
+            
             
         
         } catch (err) {
@@ -269,49 +308,58 @@ axios.post('https://api.hinodms.co.id/Request.ashx', article, { headers , httpsA
       //console.log(response);
       res.json(response.data);
     })
-    .catch(error => res.send(JSON.stringify(error)))
-}
+   .catch(error => res.send((error)))
+};
 
-//function as MIDDLEWARE for WORKINFO data Board that directly take data from DMS
 exports.workInfo = function (req, res) {
-  var resJ=[];
-   const agent = new https.Agent({  
-    rejectUnauthorized: false
-  });
-  //console.log(req.body)
-  var postData = JSON.parse(JSON.stringify(req.body));
-  // POST request using axios with set headers
-  var CompanyCode = postData.CompanyCode;
-  var LastUpdate = postData.LastUpdate;
- 
-  const article = {
-    "CompanyCode": CompanyCode,
-    "WoSysNo":"",
-    "LicenseNo":"",
-    "WoStatus":"",
-    "LastUpdate":LastUpdate, // ?? moment().format("YYYY-MM-DD"),
-    "UserInfo":[
-      {
-        "LoginID": "DCBAPI001",
-        "Password": "password.123"
-      }
-    ]
+  try {
+    const postData = req.body;
+    console.log(postData.CompanyCode);
+    console.log(postData.LastUpdate);
+
+    const article = {
+      "CompanyCode": postData.CompanyCode,
+      "WoSysNo": "",
+      "WoDocNo": "",
+      "LastUpdate": "",
+      "StartDate": postData.StartDate,
+      "EndDate": postData.EndDate,
+      "DealerRepCode": "",
+      "UserInfo": [
+        {
+          "LoginID": "DCBAPI001",
+          "Password": "password.123"
+        }
+      ]
     };
-    console.log(article);
-  const headers = { 
-    "Access-Control-Allow-Headers": "*", // this will allow all CORS requests
-    "Access-Control-Allow-Methods": 'OPTIONS,POST,GET', // this states the allowed methods
-    "Content-Type": "application/json",
-      'ID': 'hmsi',
-      'Pwd': 'hmsi:hmsipassword123',
-      'ProcFlag': 'GetWorkInfoRegister'
-  };
-  axios.post('https://api.hinodms.co.id/Request.ashx', article, { headers , httpsAgent: agent  })
-      .then(async(response) =>{ 
-        res.json(response.data);
+
+    const headers = {
+      "Access-Control-Allow-Headers": "*",
+      "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
+      "Content-Type": "application/json",
+      "ID": "hmsi",
+      "Pwd": "hmsi:hmsipassword123",
+      "ProcFlag": "GetWorkInfoRegister"
+    };
+
+    const agent = new https.Agent({
+      rejectUnauthorized: false
+    });
+
+    axios.post('https://hdcs.hinodms.co.id/restapi/frontend/web/index.php/workinfo/list', article, {
+      headers,
+      httpsAgent: agent
+    })
+      .then((response) => {
+        return res.json(response.data);
       })
-      .catch(error => res.send(JSON.stringify(error)))
-}
+      .catch(error => {
+        return res.send(error);
+      });
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+};
 
 exports.masterrepcode = async function (req, res) {
   try {
@@ -373,15 +421,14 @@ exports.masterrepcode = async function (req, res) {
           });
         }
       });
-
-    
     } else {
       console.error("Invalid response data format:", datares);
     }
-    const AllDataRepcode = {
+     const AllDataRepcode = {
       "GetDealerRepCodeRegisterResult": DataRepcode
     };
     return res.json(AllDataRepcode);
+    // return res.json(DataRepcode);
   } catch (error) {
     return res.status(500).send(error.message);
   }
@@ -394,13 +441,16 @@ exports.holiday = async (req, res) => {
 
     let text = '';
     let values = [];
-    
+
     if (crudType === "insert") {
-      text = 'INSERT INTO holidays(companycode, description, holidays_date, active) VALUES ($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT companycode_holidays_date_unique DO UPDATE SET description = $2 RETURNING *';
+      text = 'INSERT INTO holidays(companycode, description, holidays_date, active) VALUES ($1, $2, $3, $4) RETURNING *';
+      values = [CompanyCode, Description, Holidays_date, Active];
+    } else if (crudType === "update") {
+      text = 'UPDATE holidays SET companycode = $1, description = $2, active = $4 WHERE holidays_date = $3';
       values = [CompanyCode, Description, Holidays_date, Active];
     } else if (crudType === "delete") {
-      text = 'DELETE FROM holidays WHERE holidays_date = $1 AND companycode = $2;';
-      values = [Holidays_date,CompanyCode];
+      text = 'DELETE FROM holidays WHERE holidays_date = $1';
+      values = [Holidays_date];
     } else {
       return res.status(400).json({ Message: "Not known CRUD Type!" });
     }
@@ -543,7 +593,7 @@ exports.videodelete = async (req, res) => {
   }
 };
 
-exports.spektrumku =  async (req, res) => {
+exports.spektrumku1saja =  async (req, res) => {
   var postData = JSON.parse(JSON.stringify(req.body));
 
   var companycode =postData.CompanyCode;
@@ -1251,104 +1301,6 @@ allconfig.rows.forEach((drow) => {
           
 };
 
-exports.dailydetail = async (req, res) => {
-
-  var companycode =req.body.CompanyCode;
-  var bulan = req.body.PeriodMonth;
-  var tahun = req.body.PeriodYear;
-
-  const allconfig = await connection.query(
-    `SELECT * FROM daily WHERE companycode = $1 , WHERE companycode = "Allcompany" AND TO_CHAR(dateperiode::date, 'MM') = $2 AND EXTRACT(YEAR FROM dateperiode::date)::text = $3 ORDER BY dateperiode ASC`,
-    [companycode, bulan, tahun]
-  )
-
-  const databaru = [];
-  const MaxAkumulasi = [];
-  var dataArray1 = [];
-  var dataamount = [];
-  var AverageTarget1 = 12;
-  var x = 1;
-  var y = 1;
-  
-  allconfig.rows.forEach((drow) => {
-    var Hari = 0;
-    var total = 0;
-    var Balance = 0;
-    var CompanyCode = companycode;
-    var CompanyName = "";
-    var DatePeriode = 0;
-
-    tanggal = drow.tanggal;
-    CompanyName = drow.companyname;
-    DatePeriode = drow.dateperiode;
-    total = drow.amount;
-
-    dataamount.push(total);
-
-    var myDays = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-
-    if(DatePeriode != ""){
-      const inputDate = DatePeriode;
-      var new_date = moment(inputDate).add('day').format('YYYY-MM-DD');
-      var date = new Date(new_date);
-      var thisDay = date.getDay();
-      thisDay = myDays[thisDay];
-
-      if(thisDay == "Minggu"){
-        var isHoliday = true;
-      }else{
-        var isHoliday = false;
-      }
-      
-      dataArray1.forEach(element => {
-        if(element.date == DatePeriode ){
-          isHoliday = true;
-        }
-      });
-    } 
-
-    if(total != 0){
-        //amount ada tapi holidays
-        if(isHoliday == true){
-          Hari = 0;
-        }else{
-          Hari = x++;
-        }
-    }else{
-
-      if(isHoliday == true){
-      Hari = 0;
-      }
-
-      if(isHoliday == false){
-        Hari = x++;
-      }
-
-    }
-
-    var tanggal = y++
-    let numbers = dataamount;
-    
-    var Akumulasi = numbers.reduce((acc, curr) => acc + parseInt(curr), 0);
-    
-    MaxAkumulasi.push(Akumulasi);
-
-    Balance = Akumulasi-(AverageTarget1 * Hari);
-    
-      if(total == 0){
-        Akumulasi = 0;
-        Balance = 0;
-        databaru.push({"Tanggalke" : tanggal,"Hari" : Hari,"CompanyCode":CompanyCode,"CompanyName":CompanyName,"DatePeriode":DatePeriode,"Amount":total,"Akumulasi":Akumulasi,"Balance":Balance ,"isHoliday" : isHoliday});
-      }else{
-        databaru.push({"Tanggalke" : tanggal,"Hari" : Hari,"CompanyCode":CompanyCode,"CompanyName":CompanyName,"DatePeriode":DatePeriode,"Amount":total,"Akumulasi":Akumulasi,"Balance":Balance ,"isHoliday" : isHoliday});
-      }
-      
-    });
-
-    return res.json(databaru);
-          
-};
-
 exports.scheduller_sparepart = async (req, res) => {
 
     const allCompany = [];
@@ -1369,7 +1321,7 @@ exports.scheduller_sparepart = async (req, res) => {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
-    const currentDay = "02"
+    const currentDay = date
 
   // Lakukan tugas cron untuk setiap parameter
   companyCodes.forEach(async companycode1 => {
@@ -1449,5 +1401,5 @@ exports.scheduller_sparepart = async (req, res) => {
     }
   
 });
-res.json("Cron Job Start")
+return res.json(`"Update Data Daily Sparepart Tanggal ${currentDay}"`)
 };
