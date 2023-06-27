@@ -40,13 +40,11 @@ app.use(cors());
 app.use(upload.single('video'));
 
 const pool = require("./db");
-
 app.use(express.json()); 
 
+// express.static di isi dengan Root File yang ada di Hosting/cloud menuju file upload node js ini
 app.use('/uploads', express.static('C:/New folder/HinoBoardApps-main/HinoBoardApps-main/uploads/'));
 
-// const Crontask = require("./crondaily");
-// const Crontask = require("./scheduller.js");
 // //panggil routes
 var routes = require('./routes');
 routes(app);
